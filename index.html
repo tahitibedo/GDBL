@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GDBL</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#e5322d">
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--card:#f2f2f4;--mut:#666;--ac:#e5322d;--bd:#d6d6da}
+@media (prefers-color-scheme:dark){:root{--bg:#121214;--fg:#f0f0f0;--card:#1e1e22;--mut:#9a9aa2;--bd:#34343a}}
+html{color-scheme:light dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,sans-serif;padding:16px;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(24px,env(safe-area-inset-bottom));max-width:560px;margin-inline:auto}
+h1{font-size:1.5rem;margin:0}
+h1 small{display:block;font-size:.85rem;font-weight:400;color:var(--mut)}
+h2{font-size:1.05rem;margin:22px 0 8px}
+label{font-size:.85rem;color:var(--mut)}
+input[type=text],input[type=number]{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font:inherit}
+.row{display:flex;gap:10px;align-items:center;margin:6px 0}
+input[type=color]{width:56px;height:46px;border:none;background:none;padding:0;flex:none}
+button{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:9px 13px;font:inherit;cursor:pointer}
+button.g{background:var(--card);color:var(--fg);border:1px solid var(--bd)}
+.err{color:var(--ac);min-height:1.2em;font-size:.9rem}
+.prev{display:flex;border-radius:12px;overflow:hidden;border:1px solid var(--bd);margin:8px 0}
+.prev div{flex:1;height:84px;padding:8px;font-size:.78rem;display:flex;align-items:flex-end}
+.card{background:var(--card);border-radius:12px;padding:12px;margin:8px 0}
+.top{display:flex;justify-content:space-between;align-items:center}
+.nm{font-size:.9rem;color:var(--mut)}
+.big{font-size:1.9rem;font-weight:700;line-height:1.1}
+.pr{font-size:.8rem;color:var(--mut)}
+.bar{height:8px;border-radius:4px;background:var(--bd);margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ac)}
+#bh{background:transparent}
+#bh i{background:none;width:100%;height:100%;background:linear-gradient(90deg,red,#ff0,#0f0,#0ff,#00f,#f0f,red)}
+.hint{font-size:.85rem;color:var(--mut);margin:6px 0}
+details{background:var(--card);border-radius:12px;padding:10px 12px;margin:8px 0}
+summary{cursor:pointer}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.item{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:12px;padding:8px;margin:6px 0}
+.item .sw{width:40px;height:40px;border-radius:8px;border:1px solid var(--bd);flex:none}
+.item .t{flex:1;min-width:0;cursor:pointer}
+.item .t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .t span{font-size:.8rem;color:var(--mut)}
+ul{padding-left:18px;margin:6px 0}
+li{margin:4px 0;font-size:.9rem}
+</style>
+</head>
+<body>
+<h1>GDBL<small>Code HEX → réglages de peinture Forza Horizon 6</small></h1>
+
+<h2>1. Choisis ta couleur</h2>
+<label for="q">Cherche par son nom</label>
+<input type="text" id="q" placeholder="ex. rouge candy, bleu nuit, vert foncé…" autocomplete="off" autocapitalize="off" spellcheck="false">
+<div id="qr"></div>
+<div class="hint" id="qe"></div>
+<label style="display:block;margin-top:12px">… ou entre directement un code HEX</label>
+<div class="row">
+  <input type="text" id="hex" value="#FF5733" maxlength="7" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Code HEX">
+  <input type="color" id="pk" value="#ff5733" aria-label="Choisir une couleur">
+</div>
+<div class="err" id="err"></div>
+
+<div id="out">
+  <div class="prev"><div id="tgt">Couleur voulue</div><div id="res">Couleur obtenue en jeu</div></div>
+  <div class="hint" id="delta"></div>
+
+  <h2>2. Règle ces 3 curseurs dans le jeu</h2>
+  <div class="card"><div class="top"><span class="nm">Teinte (Hue)</span><button class="g" data-c="h">Copier</button></div><div class="big" id="vh"></div><div class="pr" id="ph"></div><div class="bar" id="bh"><i></i></div></div>
+  <div class="card"><div class="top"><span class="nm">Saturation</span><button class="g" data-c="s">Copier</button></div><div class="big" id="vs"></div><div class="pr" id="ps"></div><div class="bar"><i id="bs"></i></div></div>
+  <div class="card"><div class="top"><span class="nm">Luminosité (Brightness)</span><button class="g" data-c="b">Copier</button></div><div class="big" id="vb"></div><div class="pr" id="pb"></div><div class="bar"><i id="bb"></i></div></div>
+  <div class="row"><button id="cpall">Tout copier</button></div>
+  <div class="hint" id="note"></div>
+
+  <h2>3. Sauvegarder cette couleur</h2>
+  <div class="row"><input type="text" id="nm" placeholder="Nom (ex. Bleu Subaru)" maxlength="40"><button id="sv">Sauver</button></div>
+</div>
+
+<details>
+  <summary>Calibration (si la couleur ne colle pas en jeu)</summary>
+  <p class="hint">Ajoute un petit écart appliqué à toutes les conversions. Exemple : si tes couleurs sont trop sombres en jeu, mets +0.03 en luminosité.</p>
+  <div class="g3">
+    <div><label>Teinte</label><input type="number" id="ch" step="0.01" min="-0.5" max="0.5" value="0"></div>
+    <div><label>Saturation</label><input type="number" id="cs" step="0.01" min="-0.5" max="0.5" value="0"></div>
+    <div><label>Luminosité</label><input type="number" id="cb" step="0.01" min="-0.5" max="0.5" value="0"></div>
+  </div>
+  <div class="row"><button class="g" id="cr">Remettre à zéro</button></div>
+</details>
+
+<h2>Couleurs sauvegardées</h2>
+<div id="list"></div>
+<div class="hint" id="empty">Aucune couleur sauvegardée pour l'instant.</div>
+
+<h2>Conseils</h2>
+<ul>
+  <li>Le jeu utilise des valeurs de 0 à 1. La teinte est l'angle HSB (0–360°) divisé par 360.</li>
+  <li>Pour un résultat fiable, juge la couleur en pleine journée : l'éclairage du jeu change l'apparence de la peinture.</li>
+  <li>Les peintures métalliques ou nacrées demandent souvent d'ajuster un peu la luminosité à la main.</li>
+</ul>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var store={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function clamp(x){return Math.min(1,Math.max(0,x))}
+function parseHex(s){s=s.trim().replace(/^#/,'');if(/^[0-9a-f]{3}$/i.test(s))s=s.split('').map(function(c){return c+c}).join('');if(!/^[0-9a-f]{6}$/i.test(s))return null;var n=parseInt(s,16);return [n>>16&255,n>>8&255,n&255]}
+function hexOf(a){return '#'+a.map(function(x){return x.toString(16).padStart(2,'0')}).join('').toUpperCase()}
+function toHsv(r,g,b){r/=255;g/=255;b/=255;var mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,h=0;if(d){if(mx==r)h=((g-b)/d)%6;else if(mx==g)h=(b-r)/d+2;else h=(r-g)/d+4;h/=6;if(h<0)h+=1}return [h,mx?d/mx:0,mx]}
+function toRgb(h,s,v){h=(((h%1)+1)%1)*6;var i=Math.floor(h),f=h-i,p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);var m=[[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]][i%6];return m.map(function(x){return Math.round(x*255)})}
+function f2(x){return x.toFixed(2)}
+function f3(x){return x.toFixed(3)}
+var cur=null,vals=null;
+function cal(){return {h:+$('ch').value||0,s:+$('cs').value||0,b:+$('cb').value||0}}
+function render(){
+  var c=parseHex($('hex').value);
+  if(!c){$('err').textContent='Code HEX invalide (exemple : #FF5733).';$('out').hidden=true;return}
+  $('err').textContent='';$('out').hidden=false;
+  cur=hexOf(c);$('pk').value=cur.toLowerCase();
+  var v=toHsv(c[0],c[1],c[2]),k=cal();
+  var a=[((v[0]+k.h)%1+1)%1,clamp(v[1]+k.s),clamp(v[2]+k.b)];
+  var r=a.map(function(x){return Math.round(x*100)/100});
+  vals=r;
+  var rgb=toRgb(r[0],r[1],r[2]),rh=hexOf(rgb);
+  $('tgt').style.background=cur;$('res').style.background=rh;
+  var lum=function(x){return (0.299*x[0]+0.587*x[1]+0.114*x[2])>140?'#000':'#fff'};
+  $('tgt').style.color=lum(c);$('res').style.color=lum(rgb);
+  $('tgt').textContent='Voulue '+cur;$('res').textContent='Obtenue '+rh;
+  var dmax=Math.max(Math.abs(c[0]-rgb[0]),Math.abs(c[1]-rgb[1]),Math.abs(c[2]-rgb[2]));
+  $('delta').textContent='Écart dû à l\'arrondi à 2 décimales : '+dmax+'/255 au maximum sur un canal.';
+  $('vh').textContent=f2(r[0]);$('vs').textContent=f2(r[1]);$('vb').textContent=f2(r[2]);
+  $('ph').textContent='Valeur exacte : '+f3(a[0])+' ('+Math.round(a[0]*360)+'°)';
+  $('ps').textContent='Valeur exacte : '+f3(a[1])+' ('+Math.round(a[1]*100)+' %)';
+  $('pb').textContent='Valeur exacte : '+f3(a[2])+' ('+Math.round(a[2]*100)+' %)';
+  $('bs').style.width=(r[1]*100)+'%';$('bb').style.width=(r[2]*100)+'%';
+  $('bh').firstChild.style.opacity=1;
+  var n=[];
+  if(v[1]<0.02)n.push('Couleur grise : la teinte n\'a presque aucun effet, seule la luminosité compte.');
+  if(v[2]<0.02)n.push('Couleur quasi noire : la teinte et la saturation sont sans effet.');
+  $('note').textContent=n.join(' ');
+}
+function txt(w){var t={h:'Teinte',s:'Saturation',b:'Luminosité'};var i={h:0,s:1,b:2};return w=='all'?'Teinte '+f2(vals[0])+' | Saturation '+f2(vals[1])+' | Luminosité '+f2(vals[2]):f2(vals[i[w]])}
+function copy(t,btn){var done=function(){var o=btn.textContent;btn.textContent='Copié ✓';setTimeout(function(){btn.textContent=o},1200)};try{navigator.clipboard.writeText(t).then(done,done)}catch(e){done()}}
+document.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){copy(txt(b.getAttribute('data-c')),b)}});
+$('cpall').onclick=function(){copy(txt('all'),$('cpall'))};
+$('hex').oninput=function(){var s=$('hex').value;if(s&&s[0]!=='#'&&/^[0-9a-f]/i.test(s)){}render()};
+$('pk').oninput=function(e){$('hex').value=e.target.value.toUpperCase();render()};
+['ch','cs','cb'].forEach(function(i){$(i).oninput=function(){store.set('cal',cal());render()}});
+$('cr').onclick=function(){$('ch').value=$('cs').value=$('cb').value=0;store.set('cal',cal());render()};
+function drawList(){
+  var l=store.get('saved',[]),box=$('list');box.innerHTML='';$('empty').hidden=l.length>0;
+  l.forEach(function(it,i){
+    var d=document.createElement('div');d.className='item';
+    var sw=document.createElement('div');sw.className='sw';sw.style.background=it.hex;
+    var t=document.createElement('div');t.className='t';
+    var b=document.createElement('b');b.textContent=it.name;
+    var s=document.createElement('span');s.textContent=it.hex+'  ·  H '+f2(it.v[0])+'  S '+f2(it.v[1])+'  B '+f2(it.v[2]);
+    t.appendChild(b);t.appendChild(s);
+    t.onclick=function(){$('hex').value=it.hex;render();window.scrollTo(0,0)};
+    var x=document.createElement('button');x.className='g';x.textContent='✕';x.setAttribute('aria-label','Supprimer');
+    x.onclick=function(){var a=store.get('saved',[]);a.splice(i,1);store.set('saved',a);drawList()};
+    d.appendChild(sw);d.appendChild(t);d.appendChild(x);box.appendChild(d);
+  });
+}
+$('sv').onclick=function(){
+  if(!cur||!vals)return;
+  var a=store.get('saved',[]);
+  a.unshift({name:$('nm').value.trim()||cur,hex:cur,v:vals});
+  store.set('saved',a.slice(0,200));$('nm').value='';drawList();
+};
+
+var BASES=[["rouge","#E10600"],["rouge cerise","#B3122E"],["rouge sang","#7E0A0A"],["rouge pompier","#CE2029"],["bordeaux","#6D0F1F"],["orange","#FF7F00"],["orange sanguine","#D8420F"],["corail","#FF6F61"],["saumon","#FA8072"],["jaune","#FFD800"],["jaune citron","#F5E050"],["jaune moutarde","#D6A800"],["vert","#2E9E3E"],["vert sapin","#1F4D2E"],["vert olive","#708238"],["vert menthe","#7FE5B5"],["vert émeraude","#1B9E5A"],["vert citron","#A4DE02"],["kaki","#6B6B2F"],["bleu","#1E5FE0"],["bleu marine","#0B1F5E"],["bleu nuit","#101B4D"],["bleu roi","#2751D8"],["bleu ciel","#6EC6FF"],["bleu électrique","#0A6CFF"],["bleu pétrole","#1C5560"],["turquoise","#1CC7C7"],["cyan","#00BCD4"],["indigo","#3F2A8C"],["violet","#7B2CBF"],["violet prune","#5A1A5A"],["lavande","#B79AE0"],["rose","#FF5FA2"],["rose fuchsia","#E8208F"],["magenta","#E0218A"],["marron","#6B3E1F"],["chocolat","#4A2A17"],["beige","#E3D3B0"],["champagne","#EDD9A3"],["noir","#0A0A0A"],["blanc","#F5F5F5"],["gris","#808080"],["gris anthracite","#383E42"],["gris perle","#D7D7D2"],["argent","#C0C0C0"],["or","#D4AF37"],["bronze","#CD7F32"],["cuivre","#B87333"]];
+var MODS=[["clair",function(v){return [v[0],v[1]*0.55,v[2]+(1-v[2])*0.4]}],["foncé",function(v){return [v[0],Math.min(1,v[1]*1.05),v[2]*0.55]}],["vif",function(v){return [v[0],Math.max(v[1],0.9),Math.max(v[2],0.95)]}],["pastel",function(v){return [v[0],Math.min(v[1],0.3),0.97]}],["candy",function(v){return [v[0],Math.max(v[1],0.92),Math.min(Math.max(v[2],0.7),0.85)]}],["néon",function(v){return [v[0],1,1]}]];
+var SYN={red:'rouge',blue:'bleu',green:'vert',yellow:'jaune',black:'noir',white:'blanc',gray:'gris',grey:'gris',pink:'rose',purple:'violet',brown:'marron',dark:'fonce',light:'clair',bright:'vif',sombre:'fonce',fluo:'neon',silver:'argent',gold:'or',navy:'marine',lime:'citron'};
+var IGN={metallise:1,metallisee:1,nacre:1,nacree:1,mat:1,matte:1,brillant:1,satine:1,vernis:1,couleur:1,de:1,la:1,le:1,du:1,en:1,un:1,une:1,peinture:1,metal:1};
+function nz(x){return x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
+var CI=[];
+function addC(n,hx){var k=nz(n);CI.push({n:n,k:k,w:k.split(' '),hex:hx})}
+BASES.forEach(function(b){addC(b[0],b[1]);var c=parseHex(b[1]),v=toHsv(c[0],c[1],c[2]),ach=/^(gris|noir|blanc|argent)/.test(nz(b[0]));MODS.forEach(function(m,i){if(ach&&i>1)return;var r=m[1](v);addC(b[0]+' '+m[0],hexOf(toRgb(r[0],r[1],r[2])))})});
+function srch(q){
+  var t=nz(q).split(/[^a-z0-9]+/).map(function(x){return SYN[x]||x}).filter(function(x){return x&&!IGN[x]});
+  if(!t.length)return [];
+  return CI.filter(function(e){return t.every(function(x){return e.w.some(function(w){return x.length<=2?w===x:w.indexOf(x)===0})})}).sort(function(a,b){return a.k.length-b.k.length}).slice(0,8);
+}
+function showRes(){
+  var q=$('q').value,box=$('qr');box.innerHTML='';$('qe').textContent='';
+  if(!q.trim())return;
+  var r=srch(q);
+  if(!r.length){$('qe').textContent='Aucune couleur trouvée. Essaie un autre mot (ex. rouge, bleu nuit, vert foncé).';return}
+  r.forEach(function(e){
+    var d=document.createElement('div');d.className='item';
+    var sw=document.createElement('div');sw.className='sw';sw.style.background=e.hex;
+    var t=document.createElement('div');t.className='t';
+    var b=document.createElement('b');b.textContent=e.n.charAt(0).toUpperCase()+e.n.slice(1);
+    var s=document.createElement('span');s.textContent=e.hex;
+    t.appendChild(b);t.appendChild(s);
+    d.onclick=function(){$('hex').value=e.hex;$('nm').value=b.textContent;$('q').value='';box.innerHTML='';$('qe').textContent='';render()};
+    d.style.cursor='pointer';d.appendChild(sw);d.appendChild(t);box.appendChild(d);
+  });
+  $('qe').textContent='Teintes approximatives : ajuste en jeu ou avec la calibration si besoin.';
+}
+$('q').oninput=showRes;
+var k0=store.get('cal',{h:0,s:0,b:0});$('ch').value=k0.h;$('cs').value=k0.s;$('cb').value=k0.b;
+drawList();render();
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+</script>
+</body>
+</html>
